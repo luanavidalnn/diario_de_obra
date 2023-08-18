@@ -1,0 +1,21 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+    <h1>Diário de Obras</h1>
+    <form action="/add_entry" method="POST">
+        <label for="title">Título:</label>
+        <input type="text" id="title" name="title" required><br>
+        <label for="description">Descrição:</label>
+        <textarea id="description" name="description" rows="4" required></textarea><br>
+        <input type="submit" value="Adicionar">
+    </form>
+    <h2>Entradas:</h2>
+    <ul>
+        {% for entry in entries %}
+            <li>
+                <h3>{{ entry.title }}</h3>
+                <p>{{ entry.description }}</p>
+            </li>
+        {% endfor %}
+    </ul>
+{% endblock %}
