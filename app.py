@@ -13,25 +13,32 @@ users = db.users  # Coleção de usuários
 @app.route('/')
 def index():
     if 'username' in session:
-        entries_list = entries.find()
+        username = session['username']
+        entries_list = entries.find({'created_by': username})
         return render_template('diary.html', entries=entries_list)
     else:
         flash('Faça login para acessar o diário.', 'danger')
         return redirect('/login')
 
+
 @app.route('/add_entry', methods=['POST'])
 def add_entry():
     # Verifica se o usuário está logado
     if 'username' in session:
+        username = session['username']
         title = request.form.get('title')
         description = request.form.get('description')
         entry_date = request.form.get('entry_date')
         entry_time = request.form.get('entry_time')
 
-        # Combine a data e hora em um único objeto datetime
-        entry_datetime = datetime.strptime(f"{entry_date} {entry_time}", "%Y-%m-%d %H:%M")
+        # Define entry_datetime com um valor padrão
+        entry_datetime = None
 
-        entries.insert_one({'title': title, 'description': description, 'entry_datetime': entry_datetime})
+        # Verifica se entry_date e entry_time foram fornecidos
+        if entry_date and entry_time:
+            entry_datetime = datetime.strptime(f"{entry_date} {entry_time}", "%Y-%m-%d %H:%M")
+
+        entries.insert_one({'title': title, 'description': description, 'entry_datetime': entry_datetime, 'created_by': username})
         return redirect('/')
     else:
         flash('Faça login para adicionar uma entrada.', 'danger')
@@ -52,6 +59,15 @@ def register():
             return redirect('/login')
 
     return render_template('register.html')
+
+@app.route('/report')
+def report():
+    if 'username' in session:
+        entries_list = entries.find()
+        return render_template('report.html', entries=entries_list)
+    else:
+        flash('Faça login para acessar o relatório.', 'danger')
+        return redirect('/login')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
