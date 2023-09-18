@@ -1,0 +1,47 @@
+/* Estilos gerais */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    padding: 20px;
+}
+
+.container {
+    margin-top: 20px;
+}
+
+/* Estilos do cabeçalho */
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.card-header h2 {
+    margin: 0;
+}
+
+/* Estilos do formulário */
+.form-group {
+    margin-bottom: 20px;
+}
+
+/* Estilos do botão de logout */
+.btn-danger {
+    color: #fff;
+}
+
+/* Estilos da lista de entradas */
+.list-group-item {
+    margin-top: 10px;
+    border-color: #ccc;
+    border-radius: 5px;
+    padding: 10px;
+}
+
+.list-group-item h4 {
+    margin: 0;
+}
+
+.list-group-item p {
+    margin-bottom: 0;
+}
