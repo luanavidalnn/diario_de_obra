@@ -1,0 +1,19 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+    <h1>Login</h1>
+    <!-- Se o usuário estiver logado, mostre o link de logout -->
+    {% if 'username' in session %}
+        <p>Você está logado como {{ session['username'] }}. <a href="/logout">Sair</a></p>
+    {% else %}
+        <!-- Se o usuário não estiver logado, mostre o formulário de login -->
+        <form action="/login" method="POST">
+            <label for="username">Nome de Usuário:</label>
+            <input type="text" id="username" name="username" required><br>
+            <label for="password">Senha:</label>
+            <input type="password" id="password" name="password" required><br>
+            <input type="submit" value="Login">
+        </form>
+        <p>Não tem uma conta? <a href="/register">Cadastrar</a></p>
+    {% endif %}
+{% endblock %}
