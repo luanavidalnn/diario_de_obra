@@ -2,18 +2,15 @@
 <html>
 <head>
     <title>Diário de Obras</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    
-</head>    
+    <!-- Adicione o CDN do Bootstrap CSS aqui -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>  
 <body>
     <nav>
-        <a href="/">Home</a>
+        <a href="/logout">Sair</a>
     </nav>
     <div class="content">
-        {% block content %}{% endblock %}
-    </div>
-    <div class="header">
-        <a href="/logout">Sair</a>
+        {% block content %}{% endblock %}        
     </div>
 </body>
 </html>

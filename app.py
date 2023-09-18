@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, session, flash, url_for
 from pymongo import MongoClient
 import bcrypt
+from datetime import datetime
 
 app = Flask(__name__)
 app.secret_key = "sua_chave_secreta"  # Substitua pela sua chave secreta
@@ -12,10 +13,10 @@ users = db.users  # Coleção de usuários
 @app.route('/')
 def index():
     if 'username' in session:
-        # Se o usuário estiver logado, exiba a tela principal
-        return render_template('diary.html', entries=entries.find())
+        entries_list = entries.find()
+        return render_template('diary.html', entries=entries_list)
     else:
-        # Se o usuário não estiver logado, redirecione para a tela de login
+        flash('Faça login para acessar o diário.', 'danger')
         return redirect('/login')
 
 @app.route('/add_entry', methods=['POST'])
@@ -24,7 +25,13 @@ def add_entry():
     if 'username' in session:
         title = request.form.get('title')
         description = request.form.get('description')
-        entries.insert_one({'title': title, 'description': description})
+        entry_date = request.form.get('entry_date')
+        entry_time = request.form.get('entry_time')
+
+        # Combine a data e hora em um único objeto datetime
+        entry_datetime = datetime.strptime(f"{entry_date} {entry_time}", "%Y-%m-%d %H:%M")
+
+        entries.insert_one({'title': title, 'description': description, 'entry_datetime': entry_datetime})
         return redirect('/')
     else:
         flash('Faça login para adicionar uma entrada.', 'danger')
