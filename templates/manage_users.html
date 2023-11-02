@@ -1,0 +1,42 @@
+<div class="container mt-3">
+    <h1>Gerenciamento de Usuários</h1>
+    {% extends 'bootstrap/base.html' %}
+
+    {% block content %}
+    <h1>Lista de Usuários</h1>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message[1] }}">
+            {{ message[0] }}
+            </div>
+        {% endfor %}
+        {% endif %}
+    {% endwith %}
+    
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">Nome de Usuário</th>
+                <th scope="col">Perfil</th>
+                <th scope="col">Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr>
+                <td>{{ user.username }}</td>
+                <td>{{ user.profile }}</td>
+                <td>
+                    <a href="/edit/{{ user._id }}">Editar</a> |
+                    <a href="/remove/{{ user._id }}">Remover</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="/users/add" class="btn btn-success">Adicionar Usuário</a>
+    <a href="/" class="btn btn-secondary">Voltar</a>
+  {% endblock %}
+</div>

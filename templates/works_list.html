@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Relatório</title>
+    <title>Lista de Obras</title>
     <!-- Adicione os links para os estilos do Bootstrap -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
@@ -17,24 +17,20 @@
         </ul>
     </nav>
     <div class="container mt-5">
-        <h1>Relatório</h1>
+        <h1>Obras:</h1>
         <table class="table">
             <thead>
                 <tr>
-                    <th scope="col">Data e Hora</th>
-                    <th scope="col">Título</th>
-                    <th scope="col">Descrição</th>
-                    <th scope="col">Usuário</th>
+                    <th scope="col">ID</th>
+                    <th scope="col">Nome</th>
                 </tr>
             </thead>
             <tbody>
                 <!-- Use um loop para iterar sobre as entradas do diário e preencher a tabela -->
-                {% for entry in entries %}
+                {% for entry in works %}
                 <tr>
-                    <td>{{ entry.entry_datetime }}</td>
-                    <td>{{ entry.title }}</td>
-                    <td>{{ entry.description }}</td>
-                    <td>{{ entry.created_by }}</td>
+                    <td>{{ work.id }}</td>
+                    <td>{{ entry.work_name }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
