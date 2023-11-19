@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciamento de Obras</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="/">Home</a>
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="/logout">Logout</a>
+            </li>
+        </ul>
+    </nav>
+    <div class="container mt-5">
+        <div id="addWorkForm" style="display: block;">
+            <h2>Adicionar Obra</h2>
+            <form id="workForm">
+                <div class="form-group">
+                    <label for="work_id">ID</label>
+                    <input type="text" class="form-control" id="work_id" required>
+                    <label for="work_name">Nome da Obra</label>
+                    <input type="text" class="form-control" id="work_name" required>
+                </div>
+                <button type="button" onclick="addWork()" class="btn btn-success">Adicionar Obra</button>
+                <a href="/" class="btn btn-secondary">Voltar</a>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function addWork() {
+            var workName = document.getElementById('work_id').value;
+            var workName = document.getElementById('work_name').value;
+
+            fetch('/add_works', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `work_name=${workName}&work_id=${work_id}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    // Atualize a tabela de obras após a adição (você precisa implementar a função updateWorksTable)
+                    fetch('/get_works')
+                        .then(response => response.json())
+                        .then(works => {
+                            updateWorksTable(works);
+                        })
+                        .catch(error => {
+                            console.error('Erro ao obter a lista de obras:', error);
+                        });
+                } else {
+                    alert('Erro ao adicionar obra: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Erro na solicitação:', error);
+            });
+        }
+    </script>
+</body>
+</html>

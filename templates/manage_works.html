@@ -1,45 +1,99 @@
-<div class="container mt-5">
-    <h1>Gerenciar Obras</h1>
-    {% extends 'bootstrap/base.html' %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciar Obras</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="/">Home</a>
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="/logout">Logout</a>
+            </li>
+        </ul>
+    </nav>
+    <div class="container mt-5">
+        <h1>Lista de Obras</h1>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">ID</th>
+                    <th scope="col">Nome da Obra</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for work in works %}
+                    <tr>
+                        <td>{{ work.id }}</td>
+                        <td>{{ work.work_name }}</td>
+                        <td>
+                            <a href="/edit_works/{{ work.id }}" class="btn btn-primary">Editar</a>
+                            <a href="#" onclick="removeWork('{{ work.id }}')" class="btn btn-danger">Excluir</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <button onclick="addWorks()" class="btn btn-success">Adicionar Obra</button>
+        <a href="/" class="btn btn-secondary">Voltar</a>
+    </div>
 
-    {% block content %}
-    <h1>Lista de Obras</h1>
+    <script>
+        function addWorks() {
+            window.location.href = `/add_works`;
+        }
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-        {% for message in messages %}
-            <div class="alert alert-{{ message[1] }}">
-            {{ message[0] }}
-            </div>
-        {% endfor %}
-        {% endif %}
-    {% endwith %}
+        function removeWork(workId) {
+            var confirmRemove = confirm("Tem certeza de que deseja remover esta obra?");
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th scope="col">ID</th>
-                <th scope="col">Nome da Obra</th>
-                <th scope="col">Ações</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for work in works %}
-            <tr>
-                <td>{{ work.id }}</td>
-                <td>{{ work.work_name }}</td>
-                <td>
-                    <a href="/works/edit_works/{{ work.id }}" class="btn btn-primary">Editar</a>
-                    <a href="/works/delete_works/{{ work.id }}" class="btn btn-danger">Excluir</a>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+            if (confirmRemove) {
+                fetch(`/remove_works/${workId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert(data.message);
+                            fetch('/get_works')
+                                .then(response => response.json())
+                                .then(works => {
+                                    updateWorksTable(works);
+                                })
+                                .catch(error => {
+                                    console.error('Erro ao obter a lista de obras:', error);
+                                });
+                        } else {
+                            alert('Erro ao remover obra: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erro na solicitação:', error);
+                    });
+            }
+        }
 
-    <a href="/works/add_works" class="btn btn-success">Adicionar Obra</a>
-    <a href="/" class="btn btn-secondary">Voltar</a>
-    {% endblock %}
-  
+        function updateWorksTable(works) {
+            var tbody = document.querySelector('table tbody');
+            tbody.innerHTML = '';
+            works.forEach(work => {
+                var row = `<tr>
+                                <td>${work.id}</td>
+                                <td>${work.work_name}</td>
+                                <td>
+                                    <a href="/manage_works/edit_works/${work.id}" class="btn btn-primary">Editar</a>
+                                    <a href="#" onclick="removeWork('${work.id}')" class="btn btn-danger">Excluir</a>
+                                </td>
+                            </tr>`;
+                tbody.innerHTML += row;
+            });
+        }
+    </script>
 </div>
-
+</body>
+</html>

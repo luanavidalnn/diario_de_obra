@@ -16,6 +16,7 @@ entries = db.entries
 users = db.users
 works = db.works
 users_list = []
+works_list = []
 
 
 def is_admin_user():
@@ -133,12 +134,8 @@ def edit_user(username):
 def update_user():
     if is_admin_user():
         username = request.form.get('username')
-        profile = request.form.get('profile')
-
-        # Lógica para atualizar o usuário no banco de dados
-        # Substitua esta lógica pela sua implementação real
+        profile = request.form.get('profile')      
         users.update_one({'username': username}, {"$set": {'profile': profile}})
-        
         return jsonify({'success': True, 'message': 'Usuário atualizado com sucesso!'})
     else:
         return jsonify({'success': False, 'message': 'Acesso permitido apenas para o administrador.'})
@@ -155,59 +152,45 @@ def remove_user(username):
 @app.route('/manage_works')
 def manage_works():
     if is_admin_user():
-        works_list = works.find()
-        return render_template('works_list.html', works=works_list)
+        works_list = list(works.find({}, {'_id': 0}))
+        return render_template('manage_works.html', works=works_list)
     else:
         flash('Acesso permitido apenas para o administrador.', 'danger')
         return redirect('/')
-    
-@app.route('/works')
-def list_works():
-    if 'username' in session:
-        username = session['username']
-        user = users.find_one({'username': username})
 
-        if user.get('profile') == 'admin':
-            works_list = works.find()
-            return render_template('works_list.html', works=works_list)
-        else:
-            flash('Acesso permitido apenas para o administrador.', 'danger')
-            return redirect('/')
-    else:
-        flash('Faça login para acessar esta página.', 'danger')
-        return redirect('/login')
+@app.route('/add_works', methods=['GET', 'POST'])
+def add_works():
+    if request.method == 'POST':
+        if is_admin_user():
+            work_name = request.form.get('work_name')
+            if works.find_one({'work_name': work_name}):
+                return jsonify({'success': False, 'message': 'Nome de obra já existe.'})
+            else:
+                works.insert_one({'work_name': work_name})
+                return jsonify({'success': True, 'message': 'Obra cadastrada com sucesso!'})
 
-@app.route('/works/add', methods=['POST'])
-def add_work():
+    return render_template('add_works.html')
+
+@app.route('/edit_works/<work_id>')
+def edit_works(work_id):
     if is_admin_user():
-        work_name = request.form.get('work_name')
-        works.insert_one({'work_name': work_name})
-        flash('Obra cadastrada com sucesso!', 'success')
-        return redirect('/works')
+        work_details = works.find_one({'_id': ObjectId(work_id)})
+        return render_template('edit_works.html', work=work_details)
     else:
         flash('Acesso permitido apenas para o administrador.', 'danger')
-        return redirect('/')
-    
-@app.route('/works/edit/<work_id>', methods=['POST'])
-def edit_work(work_id):
-    if is_admin_user():
-        new_work_name = request.form.get('new_work_name')
-        works.update_one({'_id': ObjectId(work_id)}, {"$set": {'work_name': new_work_name}})
-        flash('Obra atualizada com sucesso!', 'success')
-        return redirect('/works')
-    else:
-        flash('Acesso permitido apenas para o administrador.', 'danger')
-        return redirect('/')
-    
-@app.route('/works/delete/<work_id>')
-def delete_work(work_id):
+        return redirect('/manage_works')
+
+@app.route('/remove_works/<work_id>', methods=['POST'])
+def remove_works(work_id):
     if is_admin_user():
         works.delete_one({'_id': ObjectId(work_id)})
-        flash('Obra excluída com sucesso!', 'success')
-        return redirect('/works')
+        flash('Obra removida com sucesso!', 'success')
+        return redirect('/manage_works')
     else:
         flash('Acesso permitido apenas para o administrador.', 'danger')
-        return redirect('/')
+        return redirect('/manage_works')
+   
+
 
 @app.route('/report')
 def report():
