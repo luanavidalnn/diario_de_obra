@@ -162,7 +162,6 @@
             .then(data => {
                 if (data.success) {
                     alert(data.message);
-                    // Redirecione de volta à página de gerenciamento de usuários ou faça outra ação necessária
                     window.location.href = '/manage_users';
                 } else {
                     alert('Erro ao atualizar usuário: ' + data.message);
