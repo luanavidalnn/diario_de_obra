@@ -143,6 +143,15 @@ def update_user():
     else:
         return jsonify({'success': False, 'message': 'Acesso permitido apenas para o administrador.'})
 
+@app.route('/remove_user/<username>', methods=['POST'])
+def remove_user(username):
+    if is_admin_user():
+        users.delete_one({'username': username})
+        return jsonify({'success': True, 'message': f'Usuário {username} removido com sucesso!'})
+    else:
+        return jsonify({'success': False, 'message': 'Acesso permitido apenas para o administrador.'})
+
+
 @app.route('/manage_works')
 def manage_works():
     if is_admin_user():

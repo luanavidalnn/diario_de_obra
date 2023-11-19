@@ -172,7 +172,6 @@
             });
         }
         
-
         function updateUser() {
 
             var username = document.getElementById('editUsername').value;
@@ -184,13 +183,40 @@
             document.getElementById('editForm').reset();
     
             window.location.href = '/manage_users';
-
-
         }
 
         function removeUser(username) {
-            alert("Implemente lógica para remover o usuário: " + username);
+            var confirmRemove = confirm("Tem certeza de que deseja remover o usuário " + username + "?");
+        
+            if (confirmRemove) {
+                fetch(`/remove_user/${username}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                        fetch('/get_users')
+                            .then(response => response.json())
+                            .then(users => {
+                                updateUsersTable(users);
+                            })
+                            .catch(error => {
+                                console.error('Erro ao obter a lista de usuários:', error);
+                            });
+                    } else {
+                        alert('Erro ao remover usuário: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro na solicitação:', error);
+                });
+            }
         }
+        
     </script>
 
 </body>
