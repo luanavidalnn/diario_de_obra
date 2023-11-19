@@ -1,42 +1,145 @@
-<div class="container mt-3">
-    <h1>Gerenciamento de Usuários</h1>
-    {% extends 'bootstrap/base.html' %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciamento de Usuários</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="/">Home</a>
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="/logout">Logout</a>
+            </li>
+        </ul>
+    </nav>
+    <div class="container mt-3">
+        <h1>Gerenciamento de Usuários</h1>
+        <div id="addUserForm" style="display: none;">
+            <!-- Formulário para adicionar usuário -->
+            <h2>Adicionar Usuário</h2>
+            <form id="userForm">
+                <div class="form-group">
+                    <label for="username">Nome de Usuário</label>
+                    <input type="text" class="form-control" id="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="profile">Perfil</label>
+                    <input type="text" class="form-control" id="profile" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Senha</label>
+                    <input type="password" class="form-control" id="password" required>
+                </div>
+                <button type="button" class="btn btn-primary" onclick="addUser()">Adicionar</button>
+            </form>
+        </div>
 
-    {% block content %}
-    <h1>Lista de Usuários</h1>
+        <h1>Lista de Usuários</h1>
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-        {% for message in messages %}
-            <div class="alert alert-{{ message[1] }}">
-            {{ message[0] }}
-            </div>
-        {% endfor %}
-        {% endif %}
-    {% endwith %}
-    
-    <table class="table">
-        <thead>
-            <tr>
-                <th scope="col">Nome de Usuário</th>
-                <th scope="col">Perfil</th>
-                <th scope="col">Ações</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for user in users %}
-            <tr>
-                <td>{{ user.username }}</td>
-                <td>{{ user.profile }}</td>
-                <td>
-                    <a href="/edit/{{ user._id }}">Editar</a> |
-                    <a href="/remove/{{ user._id }}">Remover</a>
-                </td>
-            </tr>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message[1] }}">
+                {{ message[0] }}
+                </div>
             {% endfor %}
-        </tbody>
-    </table>
-    <a href="/users/add" class="btn btn-success">Adicionar Usuário</a>
-    <a href="/" class="btn btn-secondary">Voltar</a>
-  {% endblock %}
-</div>
+            {% endif %}
+        {% endwith %}
+        
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">Nome de Usuário</th>
+                    <th scope="col">Perfil</th>
+                    <th scope="col">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>{{ user.username }}</td>
+                    <td>{{ user.profile }}</td>
+                    <td>
+                        <button onclick="editUser('{{ user.username }}')" class="btn btn-info btn-sm">Editar</button>
+                        <button onclick="removeUser('{{ user.username }}')" class="btn btn-danger btn-sm">Remover</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <button onclick="showAddUserForm()" class="btn btn-success">Adicionar Usuário</button>
+    </div>
+
+    
+    <script>
+        function showAddUserForm() {
+            document.getElementById('addUserForm').style.display = 'block';
+        }
+
+        function addUser() {
+            var username = document.getElementById('username').value;
+            var profile = document.getElementById('profile').value;
+            var password = document.getElementById('password').value;
+
+            fetch('/users/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `username=${username}&profile=${profile}&password=${password}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    document.getElementById('addUserForm').style.display = 'none';
+                    // Atualizar a lista de usuários após adicionar um novo usuário
+                    fetch('/get_users')
+                        .then(response => response.json())
+                        .then(users => {
+                            updateUsersTable(users);
+                        })
+                        .catch(error => {
+                            console.error('Erro ao obter a lista de usuários:', error);
+                        });
+                } else {
+                    alert('Erro ao adicionar usuário: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Erro na solicitação:', error);
+            });
+        }
+
+        function updateUsersTable(users) {
+            var tbody = document.querySelector('table tbody');
+            // Limpar a tabela existente
+            tbody.innerHTML = '';
+            // Preencher a tabela com os novos dados
+            users.forEach(user => {
+                var row = `<tr>
+                                <td>${user.username}</td>
+                                <td>${user.profile}</td>
+                                <td>
+                                    <button onclick="editUser('${user.username}')" class="btn btn-info btn-sm">Editar</button>
+                                    <button onclick="removeUser('${user.username}')" class="btn btn-danger btn-sm">Remover</button>
+                                </td>
+                            </tr>`;
+                tbody.innerHTML += row;
+            });
+        }
+
+        function editUser(username) {
+            alert("Implemente lógica para editar o usuário: " + username);
+        }
+
+        function removeUser(username) {
+            alert("Implemente lógica para remover o usuário: " + username);
+        }
+    </script>
+
+</body>
+</html>

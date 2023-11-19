@@ -15,20 +15,12 @@
             </li>
         </ul>
     </nav>
+
     <div class="container mt-3">
-        <div class="d-flex flex-row">
-            <div class="btn-group">
-                <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    Gerenciar Usuários
-                </button>
-                <div class="dropdown-menu">
-                    <a class="dropdown-item" href="/manage_users/add">Cadastrar Usuário</a>
-                    <a class="dropdown-item" href="/manage_users/edit">Editar Usuário</a>
-                    <a class="dropdown-item" href="/manage_users/remove">Remover Usuário</a>
-                </div>
-            </div>
-            <a href="/manage_works" class="btn btn-info ml-2">Gerenciar Obras</a>
-            <a href="/report" class="btn btn-info ml-2">Relatório</a>
+        <div class="d-flex flex-column">
+            <a href="/manage_users" id="manage-users-btn" class="btn btn-info mb-2">Gerenciar Usuários</a>
+            <a href="/manage_works" id="manage-works-btn" class="btn btn-info mb-2">Gerenciar Obras</a>
+            <a href="/report" id="report-btn" class="btn btn-info mb-2">Relatório</a>
         </div>
     </div>
     
@@ -69,7 +61,6 @@
                 </tr>
             </thead>
             <tbody>
-                <!-- Use um loop para iterar sobre as entradas do diário e preencher a tabela -->
                 {% for entry in entries %}
                 <tr>
                     <td>{{ entry.entry_datetime }}</td>
@@ -85,8 +76,14 @@
         <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-
-
-    
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                if (!{{ is_admin_user() | tojson | safe }}) {
+                    document.getElementById('manage-users-btn').style.display = 'none';
+                    document.getElementById('manage-works-btn').style.display = 'none';
+                    document.getElementById('report-btn').style.display = 'none';
+                }
+            });
+        </script>   
 </body>
 </html>

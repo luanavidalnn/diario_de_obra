@@ -1,8 +1,11 @@
-from flask import Flask, render_template, request, redirect, session, flash
+from flask import Flask, render_template, request, redirect, session, flash, jsonify
 from pymongo import MongoClient
 import bcrypt
 from datetime import datetime
 from bson.objectid import ObjectId
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
 
 app = Flask(__name__)
 app.secret_key = "sua_chave_secreta"
@@ -12,13 +15,21 @@ db = client['diario_de_obras']
 entries = db.entries
 users = db.users
 works = db.works
+users_list = []
 
-def is_admin():
+
+def is_admin_user():
     if 'username' in session:
         username = session['username']
         user = users.find_one({'username': username})
         return user.get('profile') == 'administrador'
     return False
+
+
+@app.context_processor
+def utility_processor():
+    return dict(is_admin_user=is_admin_user)
+
 
 @app.before_request
 def require_login():
@@ -30,8 +41,11 @@ def require_login():
 @app.route('/')
 def index():
     username = session['username']
+    is_admin = is_admin_user()  # Adicione esta linha para verificar se o usuário é administrador
     entries_list = entries.find({'created_by': username})
-    return render_template('diary.html', entries=entries_list)
+    return render_template('diary.html', entries=entries_list, is_admin=is_admin)
+
+
 
 @app.route('/add_entry', methods=['POST'])
 def add_entry():
@@ -50,26 +64,6 @@ def add_entry():
     else:
         flash('Faça login para adicionar uma entrada.', 'danger')
         return redirect('/login')
-
-@app.route('/users', methods=['POST'])
-def add_user():
-    if is_admin():
-        # Adicione o usuário
-        return redirect('/users')
-
-# Editar um usuário
-@app.route('/users/<username>', methods=['PUT'])
-def edit_user(username):
-    if is_admin():
-        # Atualize o usuário
-        return redirect('/users')
-
-# Remover um usuário
-@app.route('/users/<username>', methods=['DELETE'])
-def delete_user(username):
-    if is_admin():
-        # Remova o usuário
-        return redirect('/users')
 
 
 @app.route('/report/works')
@@ -95,17 +89,40 @@ def register():
 
 @app.route('/manage_users')
 def manage_users():
-    print("Acessou a rota de gerenciamento de usuarios")
-    if is_admin():
-        users_list = users.find()
+    if is_admin_user():
+        users_list = list(users.find({}, {'_id': 0}))
         return render_template('manage_users.html', users=users_list)
     else:
         flash('Acesso permitido apenas para o administrador.', 'danger')
         return redirect('/')
 
+@app.route('/get_users')
+def get_users():
+    users_list = list(users.find({}, {'_id': 0}))
+    for user in users_list:
+        user['password'] = user['password'].decode('utf-8')
+
+    return jsonify(users_list)
+
+@app.route('/users/add', methods=['POST'])
+def add_user():
+    if is_admin_user():
+        username = request.form.get('username')
+        profile = request.form.get('profile')
+        password = request.form.get('password').encode('utf-8')
+        hashed_password = bcrypt.hashpw(password, bcrypt.gensalt())
+
+        if users.find_one({'username': username}):
+            return jsonify({'success': False, 'message': 'Nome de usuário já existe.'})
+        else:
+            users.insert_one({'username': username, 'profile': profile, 'password': hashed_password})
+            return jsonify({'success': True, 'message': 'Usuário cadastrado com sucesso!'})
+    else:
+        return jsonify({'success': False, 'message': 'Acesso permitido apenas para o administrador.'})
+
 @app.route('/manage_works')
 def manage_works():
-    if is_admin():
+    if is_admin_user():
         works_list = works.find()
         return render_template('works_list.html', works=works_list)
     else:
@@ -131,7 +148,7 @@ def list_works():
 
 @app.route('/works/add', methods=['POST'])
 def add_work():
-    if is_admin():
+    if is_admin_user():
         work_name = request.form.get('work_name')
         works.insert_one({'work_name': work_name})
         flash('Obra cadastrada com sucesso!', 'success')
@@ -142,7 +159,7 @@ def add_work():
     
 @app.route('/works/edit/<work_id>', methods=['POST'])
 def edit_work(work_id):
-    if is_admin():
+    if is_admin_user():
         new_work_name = request.form.get('new_work_name')
         works.update_one({'_id': ObjectId(work_id)}, {"$set": {'work_name': new_work_name}})
         flash('Obra atualizada com sucesso!', 'success')
@@ -153,7 +170,7 @@ def edit_work(work_id):
     
 @app.route('/works/delete/<work_id>')
 def delete_work(work_id):
-    if is_admin():
+    if is_admin_user():
         works.delete_one({'_id': ObjectId(work_id)})
         flash('Obra excluída com sucesso!', 'success')
         return redirect('/works')
@@ -163,7 +180,7 @@ def delete_work(work_id):
 
 @app.route('/report')
 def report():
-    if is_admin():
+    if is_admin_user():
         entries_list = entries.find()
         return render_template('report.html', entries=entries_list)
     else:
