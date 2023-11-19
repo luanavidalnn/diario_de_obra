@@ -41,7 +41,7 @@ def require_login():
 @app.route('/')
 def index():
     username = session['username']
-    is_admin = is_admin_user()  # Adicione esta linha para verificar se o usuário é administrador
+    is_admin = is_admin_user()  
     entries_list = entries.find({'created_by': username})
     return render_template('diary.html', entries=entries_list, is_admin=is_admin)
 
@@ -119,6 +119,29 @@ def add_user():
             return jsonify({'success': True, 'message': 'Usuário cadastrado com sucesso!'})
     else:
         return jsonify({'success': False, 'message': 'Acesso permitido apenas para o administrador.'})
+    
+@app.route('/edit_user/<username>')
+def edit_user(username):
+    if is_admin_user():
+        user_details = {'username': username, 'profile': ''}
+        return render_template('edit_user.html', user=user_details)
+    else:
+        flash('Acesso permitido apenas para o administrador.', 'danger')
+        return redirect('/manage_users')
+    
+@app.route('/update_user', methods=['POST'])
+def update_user():
+    if is_admin_user():
+        username = request.form.get('username')
+        profile = request.form.get('profile')
+
+        # Lógica para atualizar o usuário no banco de dados
+        # Substitua esta lógica pela sua implementação real
+        users.update_one({'username': username}, {"$set": {'profile': profile}})
+        
+        return jsonify({'success': True, 'message': 'Usuário atualizado com sucesso!'})
+    else:
+        return jsonify({'success': False, 'message': 'Acesso permitido apenas para o administrador.'})
 
 @app.route('/manage_works')
 def manage_works():
@@ -136,7 +159,6 @@ def list_works():
         user = users.find_one({'username': username})
 
         if user.get('profile') == 'admin':
-            # Consulte as obras no banco de dados e passe-as para o modelo
             works_list = works.find()
             return render_template('works_list.html', works=works_list)
         else:

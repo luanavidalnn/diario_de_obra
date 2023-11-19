@@ -18,7 +18,6 @@
     <div class="container mt-3">
         <h1>Gerenciamento de Usuários</h1>
         <div id="addUserForm" style="display: none;">
-            <!-- Formulário para adicionar usuário -->
             <h2>Adicionar Usuário</h2>
             <form id="userForm">
                 <div class="form-group">
@@ -70,10 +69,25 @@
                 {% endfor %}
             </tbody>
         </table>
+
+        <div id="editUserForm" style="display: none;">
+            <h2>Editar Usuário</h2>
+            <form id="editForm">
+                <div class="form-group">
+                    <label for="editUsername">Nome de Usuário</label>
+                    <input type="text" class="form-control" id="editUsername" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="editProfile">Perfil</label>
+                    <input type="text" class="form-control" id="editProfile" required>
+                </div>
+                <button type="button" class="btn btn-primary" onclick="updateUser()">Atualizar</button>
+            </form>
+        </div>
+
         <button onclick="showAddUserForm()" class="btn btn-success">Adicionar Usuário</button>
     </div>
 
-    
     <script>
         function showAddUserForm() {
             document.getElementById('addUserForm').style.display = 'block';
@@ -96,7 +110,6 @@
                 if (data.success) {
                     alert(data.message);
                     document.getElementById('addUserForm').style.display = 'none';
-                    // Atualizar a lista de usuários após adicionar um novo usuário
                     fetch('/get_users')
                         .then(response => response.json())
                         .then(users => {
@@ -116,9 +129,7 @@
 
         function updateUsersTable(users) {
             var tbody = document.querySelector('table tbody');
-            // Limpar a tabela existente
             tbody.innerHTML = '';
-            // Preencher a tabela com os novos dados
             users.forEach(user => {
                 var row = `<tr>
                                 <td>${user.username}</td>
@@ -133,7 +144,49 @@
         }
 
         function editUser(username) {
-            alert("Implemente lógica para editar o usuário: " + username);
+            window.location.href = `/edit_user/${username}`;
+        }
+
+        function updateUser() {
+            var username = document.getElementById('editUsername').value;
+            var profile = document.getElementById('editProfile').value;
+        
+            fetch('/update_user', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `username=${username}&profile=${profile}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    // Redirecione de volta à página de gerenciamento de usuários ou faça outra ação necessária
+                    window.location.href = '/manage_users';
+                } else {
+                    alert('Erro ao atualizar usuário: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Erro na solicitação:', error);
+            });
+        }
+        
+
+        function updateUser() {
+
+            var username = document.getElementById('editUsername').value;
+            var profile = document.getElementById('editProfile').value;
+
+            console.log("Nome de Usuário (atualizado): " + username);
+            console.log("Perfil (atualizado): " + profile);
+    
+            document.getElementById('editForm').reset();
+    
+            window.location.href = '/manage_users';
+
+
         }
 
         function removeUser(username) {
