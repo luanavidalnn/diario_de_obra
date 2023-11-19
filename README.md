@@ -11,3 +11,6 @@ sudo killall -9 python
 python app.py
 ## abra a o localhost na porta 5000 pelo navegador:
 127.0.0.1:5000
+## acesso admin
+login: admin
+senha: 12345
