@@ -17,23 +17,34 @@
     </nav>
     <div class="container mt-5">
         <h1>Lista de Obras</h1>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message[1] }}">
+                {{ message[0] }}
+                </div>
+            {% endfor %}
+            {% endif %}
+        {% endwith %}
+
         <table class="table">
             <thead>
                 <tr>
-                    <th scope="col">ID</th>
                     <th scope="col">Nome da Obra</th>
+                    <th scope="col">ID</th>
                 </tr>
             </thead>
             <tbody>
                 {% for work in works %}
-                    <tr>
-                        <td>{{ work.id }}</td>
-                        <td>{{ work.work_name }}</td>
-                        <td>
-                            <a href="/edit_works/{{ work.id }}" class="btn btn-primary">Editar</a>
-                            <a href="#" onclick="removeWork('{{ work.id }}')" class="btn btn-danger">Excluir</a>
-                        </td>
-                    </tr>
+                <tr>
+                    <td>{{ work.work_name }}</td>
+                    <td>{{ work.id }}</td>
+                    <td>
+                        <button onclick="editWorks('{{ work.work_name }}')" class="btn btn-info btn-sm">Editar</button>
+                        <button onclick="removeWorks('{{ work.id }}')" class="btn btn-danger btn-sm">Remover</button>
+                    </td>
+                </tr>
                 {% endfor %}
             </tbody>
         </table>
@@ -44,6 +55,23 @@
     <script>
         function addWorks() {
             window.location.href = `/add_works`;
+        }
+        
+        function updateWorksTable(works) {
+            var tbody = document.querySelector('table tbody');
+            tbody.innerHTML = '';
+            works.forEach(work => {
+                var row = `<tr>
+                                <td>${works.id}</td>
+                                <td>${work.work_name}</td>
+                                <td>
+                                    <button onclick="editUser('${works.id}')" class="btn btn-info btn-sm">Editar</button>
+                                    <button onclick="removeUser('${work.work_name}')" class="btn btn-danger btn-sm">Remover</button>
+                                </td>
+                            </tr>`;
+                tbody.innerHTML += row;
+            });
+                
         }
 
         function removeWork(workId) {

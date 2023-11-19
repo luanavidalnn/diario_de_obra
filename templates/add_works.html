@@ -33,21 +33,20 @@
 
     <script>
         function addWork() {
-            var workName = document.getElementById('work_id').value;
+            var workId = document.getElementById('work_id').value;
             var workName = document.getElementById('work_name').value;
-
+        
             fetch('/add_works', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                 },
-                body: `work_name=${workName}&work_id=${work_id}`
+                body: `work_id=${workId}&work_name=${workName}`
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
                     alert(data.message);
-                    // Atualize a tabela de obras após a adição (você precisa implementar a função updateWorksTable)
                     fetch('/get_works')
                         .then(response => response.json())
                         .then(works => {
@@ -63,7 +62,11 @@
             .catch(error => {
                 console.error('Erro na solicitação:', error);
             });
-        }
+        } 
+
+
+ 
+            
     </script>
 </body>
 </html>

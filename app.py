@@ -163,13 +163,20 @@ def add_works():
     if request.method == 'POST':
         if is_admin_user():
             work_name = request.form.get('work_name')
-            if works.find_one({'work_name': work_name}):
+            work_id = request.form.get('work_id')
+            if works.find_one({'work_name': work_name, 'work_id': work_id}):
                 return jsonify({'success': False, 'message': 'Nome de obra já existe.'})
             else:
-                works.insert_one({'work_name': work_name})
+                works.insert_one({'work_name': work_name, 'work_id': work_id})
                 return jsonify({'success': True, 'message': 'Obra cadastrada com sucesso!'})
 
     return render_template('add_works.html')
+
+@app.route('/get_works')
+def get_works():
+    work_name = request.form.get('work_name')
+    works_list = list(works.find({}, {'_id': 0}))
+    return jsonify(works_list)
 
 @app.route('/edit_works/<work_id>')
 def edit_works(work_id):
