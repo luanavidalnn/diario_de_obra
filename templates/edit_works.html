@@ -3,12 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerenciamento de Usuários</title>
+    <title>Gerenciamento de Obra</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
 <div class="container mt-5">
-    <form method="POST" action="/edit_works/{{ work.id }}">
-        <button type="submit" class="btn btn-primary">Salvar Edições</button>
+    <form method="POST" action="/edit_works/{{ work.work_name }}">
+        <div class="form-group">
+            <label for="new_work_name">Novo Nome da Obra</label>
+            <input type="text" class="form-control" id="new_work_name" name="new_work_name" value="{{ work.work_name }}" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Salvar Edição</button>
     </form>
+    </form>
+    <script>
+
+        function updateUser() {
+            var work_name = document.getElementById('editWorks').value;
+
+            fetch('/update_work', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `work_name=${work.work_name}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    window.location.href = '/manage_users';
+                } else {
+                    alert('Erro ao atualizar usuário: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Erro na solicitação:', error);
+            });
+        }
+    </script>
 </div>
 </html>

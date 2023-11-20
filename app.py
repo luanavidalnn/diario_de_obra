@@ -1,3 +1,4 @@
+import bson
 from flask import Flask, render_template, request, redirect, session, flash, jsonify
 from pymongo import MongoClient
 import bcrypt
@@ -26,6 +27,12 @@ def is_admin_user():
         return user.get('profile') == 'administrador'
     return False
 
+def is_valid_object_id(value):
+    try:
+        ObjectId(value)
+        return True
+    except bson.errors.InvalidId:
+        return False
 
 @app.context_processor
 def utility_processor():
@@ -158,39 +165,54 @@ def manage_works():
         flash('Acesso permitido apenas para o administrador.', 'danger')
         return redirect('/')
 
+
 @app.route('/add_works', methods=['GET', 'POST'])
 def add_works():
     if request.method == 'POST':
         if is_admin_user():
             work_name = request.form.get('work_name')
-            work_id = request.form.get('work_id')
-            if works.find_one({'work_name': work_name, 'work_id': work_id}):
+            if works.find_one({'work_name': work_name}):
                 return jsonify({'success': False, 'message': 'Nome de obra já existe.'})
             else:
-                works.insert_one({'work_name': work_name, 'work_id': work_id})
+                works.insert_one({'work_name': work_name})
                 return jsonify({'success': True, 'message': 'Obra cadastrada com sucesso!'})
 
     return render_template('add_works.html')
 
 @app.route('/get_works')
 def get_works():
-    work_name = request.form.get('work_name')
-    works_list = list(works.find({}, {'_id': 0}))
+    work_id = request.form.get('work_id')
+    works_list = list(works.find({}, {'_id': ObjectId(work_id)}))
     return jsonify(works_list)
 
-@app.route('/edit_works/<work_id>')
-def edit_works(work_id):
+@app.route('/edit_works/<work_name>', methods=['GET', 'POST'])
+def edit_works(work_name):
     if is_admin_user():
-        work_details = works.find_one({'_id': ObjectId(work_id)})
-        return render_template('edit_works.html', work=work_details)
+        if request.method == 'POST':
+            new_work_name = request.form.get('new_work_name')
+            works.update_one({'work_name': work_name}, {"$set": {'work_name': new_work_name}})
+            flash('Obra atualizada com sucesso!', 'success')
+            return redirect('/manage_works')
+        else:
+            work_details = works.find_one({'work_name': work_name})
+            return render_template('edit_works.html', work=work_details)
     else:
         flash('Acesso permitido apenas para o administrador.', 'danger')
-        return redirect('/manage_works')
-
-@app.route('/remove_works/<work_id>', methods=['POST'])
-def remove_works(work_id):
+        return redirect('/')
+    
+@app.route('/update_work', methods=['POST'])
+def update_work():
     if is_admin_user():
-        works.delete_one({'_id': ObjectId(work_id)})
+        work_name = request.form.get('work_name')    
+        works.update_one({'_id': ObjectId(work_id)}, {"$set": {'work_name': work_name}})
+        return jsonify({'success': True, 'message': 'Obra atualizada com sucesso!'})
+    else:
+        return jsonify({'success': False, 'message': 'Acesso permitido apenas para o administrador.'})
+
+@app.route('/remove_works/<work_name>', methods=['POST'])
+def remove_works(work_name):
+    if is_admin_user():
+        works.delete_one({'_id': ObjectId(work_name)})
         flash('Obra removida com sucesso!', 'success')
         return redirect('/manage_works')
     else:
