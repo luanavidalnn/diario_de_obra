@@ -7,17 +7,16 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
 <div class="container mt-5">
-    <form method="POST" action="/edit_works/{{ work.work_name }}">
+    <form method="POST" action="/edit_works/{{ works.work_name }}">
         <div class="form-group">
             <label for="new_work_name">Novo Nome da Obra</label>
-            <input type="text" class="form-control" id="new_work_name" name="new_work_name" value="{{ work.work_name }}" required>
+            <input type="text" class="form-control" id="new_work_name" name="new_work_name" value="{{ works.work_name }}" required>
         </div>
         <button type="submit" class="btn btn-primary">Salvar Edição</button>
     </form>
-    </form>
     <script>
 
-        function updateUser() {
+        function updateWorks() {
             var work_name = document.getElementById('editWorks').value;
 
             fetch('/update_work', {
@@ -25,15 +24,15 @@
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                 },
-                body: `work_name=${work.work_name}`
+                body: `work_name=${works.work_name}`
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
                     alert(data.message);
-                    window.location.href = '/manage_users';
+                    window.location.href = '/manage_works';
                 } else {
-                    alert('Erro ao atualizar usuário: ' + data.message);
+                    alert('Erro ao atualizar a obra: ' + data.message);
                 }
             })
             .catch(error => {
