@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciar Obras</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="/">Home</a>
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="/logout">Logout</a>
+            </li>
+        </ul>
+    </nav>
+    <div class="container mt-5">
+        <h1>Lista de Obras</h1>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message[1] }}">
+                {{ message[0] }}
+                </div>
+            {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">Nome da Obra</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for work in works %}
+                <tr>
+                    <td>{{ work.work_name }}</td>
+                    <td>
+                        <a href="/edit_works/{{ work.work_name }}" class="btn btn-primary">Editar</a>
+                        <button onclick="removeWork('{{ work.work_name }}')" class="btn btn-danger">Remover</button>
+
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <button onclick="addWorks()" class="btn btn-success">Adicionar Obra</button>
+        <a href="/" class="btn btn-secondary">Voltar</a>
+    </div>
+    <div id="editWorkForm" style="display: none;">
+        <h2>Editar Obra</h2>
+        <form id="editForm">
+            <div class="form-group">
+                <label for="editWorks()">Nome da Obra</label>
+                <input type="text" class="form-control" id="editWorks" readonly>
+            </div>
+            <button type="button" class="btn btn-primary" onclick="updateWorks()">Atualizar</button>
+        </form>
+    </div>
+
+
+    <script>
+        function addWorks() {
+            window.location.href = `/add_works`;
+        }
+
+        function updateWorksTable(works) {
+            var tbody = document.querySelector('table tbody');
+            tbody.innerHTML = '';
+            works.forEach(work => {
+                var row = `<tr>
+                                <td>${work.work_name}</td>
+                                <td>
+                                    <a href="/manage_works/edit_works/${work.work_name}" class="btn btn-primary">Editar</a>
+                                    <a href="#" onclick="removeWork('${work.work_name}')" class="btn btn-danger">Excluir</a>
+                                </td>
+                            </tr>`;
+                tbody.innerHTML += row;
+            });
+        }
+
+        function removeWork(work_name) {
+            var confirmRemove = confirm("Tem certeza de que deseja remover esta obra?");
+    
+            if (confirmRemove) {
+                fetch(`/remove_works/${work_name}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                        fetch('/get_works')
+                            .then(response => response.json())
+                            .then(works => {
+                                updateWorksTable(works);
+                            })
+                            .catch(error => {
+                                console.error('Erro ao obter a lista de obras:', error);
+                            });
+                    } else {
+                        alert('Erro ao remover obra: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro na solicitação:', error);
+                });
+            }
+        }
+
+        function editWorks(work_name) {
+            window.location.href = `/edit_works/${work_name}`;
+        }
+
+        function updateWorks(works) {
+            var work_name = document.getElementById('editWorks').value;
+            console.log("Nome da Obra (atualizado): " + work_name);
+            document.getElementById('editForm').reset();    
+            window.location.href = '/manage_works';
+        }
+
+
+    </script>
+</div>
+</body>
+</html>

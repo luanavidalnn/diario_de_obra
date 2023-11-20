@@ -1,53 +1,89 @@
-{% extends 'layout.html' %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seu Diário de Obras</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="/">Home</a>
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="/logout">Logout</a>
+            </li>
+        </ul>
+    </nav>
 
-{% block content %}
-    <div class="container mt-5">
-        <div class="row">
-            <div class="col-md-8">
-                <div class="card">
-                    <div class="card-header">
-                        <h2>Diário de Obras</h2>
-                    </div>
-                    <div class="card-body">
-                        <form action="/add_entry" method="POST">
-                            <div class="form-group">
-                                <label for="title">Título:</label>
-                                <input type="text" class="form-control" id="title" name="title" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="description">Descrição:</label>
-                                <textarea class="form-control" id="description" name="description" rows="4" required></textarea>
-                            </div>
-                            <div class="form-group">
-                                <label for="entry_date">Data:</label>
-                                <input type="date" class="form-control" id="entry_date" name="entry_date" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="entry_time">Hora:</label>
-                                <input type="time" class="form-control" id="entry_time" name="entry_time" required>
-                            </div>
-                            <button type="submit" class="btn btn-primary">Adicionar</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="row mt-4">
-            <div class="col-md-8">
-                <h3>Entradas:</h3>
-                <ul class="list-group">
-                    {% for entry in entries %}
-                        <li class="list-group-item">
-                            <h4>{{ entry.title }}</h4>
-                            <p>Descrição: {{ entry.description }}</p>
-                            {% if 'entry_datetime' in entry %}
-                                <p>Registro realizado em: {{ entry.entry_datetime.strftime('%d/%m/%Y às %H:%M') }}</p>
-                            {% else %}
-                                <p>Registro realizado em: N/A</p>
-                            {% endif %}
-                        </li>
-                    {% endfor %}
-                </ul>
-            </div>
+    <div class="container mt-3">
+        <div class="d-flex flex-column">
+            <a href="/manage_users" id="manage-users-btn" class="btn btn-info mb-2">Gerenciar Usuários</a>
+            <a href="/manage_works" id="manage-works-btn" class="btn btn-info mb-2">Gerenciar Obras</a>
+            <a href="/report" id="report-btn" class="btn btn-info mb-2">Relatório</a>
         </div>
     </div>
-{% endblock %}
+    
+    
+    <div class="container mt-5">
+        <h1>Adicionar Entrada</h1>
+        <form method="POST" action="/add_entry">
+            <div class="form-group">
+                <label for="title">Título</label>
+                <input type="text" class="form-control" id="title" name="title" required>
+            </div>
+            <div class="form-group">
+                <label for="description">Descrição</label>
+                <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+            </div>
+            <div class="form-row">
+                <div class="form-group col-md-6">
+                    <label for="entry_date">Data</label>
+                    <input type="date" class="form-control" id="entry_date" name="entry_date" required>
+                </div>
+                <div class="form-group col-md-6">
+                    <label for="entry_time">Hora</label>
+                    <input type="time" class="form-control" id="entry_time" name="entry_time" required>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary">Adicionar Entrada</button>
+        </form>
+    </div>
+    <div class="container mt-5">
+        <h1>Seu Relatório de Entradas</h1>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">Data e Hora</th>
+                    <th scope="col">Título</th>
+                    <th scope="col">Descrição</th>
+                    <th scope="col">Usuário</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in entries %}
+                <tr>
+                    <td>{{ entry.entry_datetime }}</td>
+                    <td>{{ entry.title }}</td>
+                    <td>{{ entry.description }}</td>
+                    <td>{{ entry.created_by }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            
+        </table>
+    </div>
+        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                if (!{{ is_admin_user() | tojson | safe }}) {
+                    document.getElementById('manage-users-btn').style.display = 'none';
+                    document.getElementById('manage-works-btn').style.display = 'none';
+                    document.getElementById('report-btn').style.display = 'none';
+                }
+            });
+        </script>   
+</body>
+</html>

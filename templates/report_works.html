@@ -1,0 +1,22 @@
+{% extends 'bootstrap/base.html' %}
+
+{% block content %}
+  <h1>Relatório de Obras</h1>
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Nome da Obra</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for work in works %}
+        <tr>
+          <td>{{ work.work_name }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <a href="/" class="btn btn-secondary">Voltar</a>
+{% endblock %}

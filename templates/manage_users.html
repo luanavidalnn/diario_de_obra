@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciamento de Usuários</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="/">Home</a>
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="/logout">Logout</a>
+            </li>
+        </ul>
+    </nav>
+    <div class="container mt-3">
+        <div id="addUserForm" style="display: none;">
+            <h2>Adicionar Usuário</h2>
+            <form id="userForm">
+                <div class="form-group">
+                    <label for="username">Nome de Usuário</label>
+                    <input type="text" class="form-control" id="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="profile">Função</label>
+                    <input type="text" class="form-control" id="profile" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Senha</label>
+                    <input type="password" class="form-control" id="password" required>
+                </div>
+                <button type="button" class="btn btn-primary" onclick="addUser()">Adicionar</button>
+            </form>
+        </div>
+
+        <h1>Lista de Usuários</h1>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message[1] }}">
+                {{ message[0] }}
+                </div>
+            {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">Nome de Usuário</th>
+                    <th scope="col">Função</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>{{ user.username }}</td>
+                    <td>{{ user.profile }}</td>
+                    <td>
+                        <button onclick="editUser('{{ user.username }}')" class="btn btn-info btn-sm">Editar</button>
+                        <button onclick="removeUser('{{ user.username }}')" class="btn btn-danger btn-sm">Remover</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div id="editUserForm" style="display: none;">
+            <h2>Editar Usuário</h2>
+            <form id="editForm">
+                <div class="form-group">
+                    <label for="editUsername">Nome de Usuário</label>
+                    <input type="text" class="form-control" id="editUsername" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="editProfile">Perfil</label>
+                    <input type="text" class="form-control" id="editProfile" required>
+                </div>
+                <button type="button" class="btn btn-primary" onclick="updateUser()">Atualizar</button>
+            </form>
+        </div>
+
+        <button onclick="showAddUserForm()" class="btn btn-success">Adicionar Usuário</button>
+    </div>
+
+    <script>
+        function showAddUserForm() {
+            document.getElementById('addUserForm').style.display = 'block';
+        }
+
+        function addUser() {
+            var username = document.getElementById('username').value;
+            var profile = document.getElementById('profile').value;
+            var password = document.getElementById('password').value;
+
+            fetch('/users/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `username=${username}&profile=${profile}&password=${password}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    document.getElementById('addUserForm').style.display = 'none';
+                    fetch('/get_users')
+                        .then(response => response.json())
+                        .then(users => {
+                            updateUsersTable(users);
+                        })
+                        .catch(error => {
+                            console.error('Erro ao obter a lista de usuários:', error);
+                        });
+                } else {
+                    alert('Erro ao adicionar usuário: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Erro na solicitação:', error);
+            });
+        }
+
+        function updateUsersTable(users) {
+            var tbody = document.querySelector('table tbody');
+            tbody.innerHTML = '';
+            users.forEach(user => {
+                var row = `<tr>
+                                <td>${user.username}</td>
+                                <td>${user.profile}</td>
+                                <td>
+                                    <button onclick="editUser('${user.username}')" class="btn btn-info btn-sm">Editar</button>
+                                    <button onclick="removeUser('${user.username}')" class="btn btn-danger btn-sm">Remover</button>
+                                </td>
+                            </tr>`;
+                tbody.innerHTML += row;
+            });
+        }
+
+        function editUser(username) {
+            window.location.href = `/edit_user/${username}`;
+        }
+
+        function updateUser() {
+            var username = document.getElementById('editUsername').value;
+            var profile = document.getElementById('editProfile').value;
+        
+            fetch('/update_user', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `username=${username}&profile=${profile}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    window.location.href = '/manage_users';
+                } else {
+                    alert('Erro ao atualizar usuário: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Erro na solicitação:', error);
+            });
+        }
+        
+        function updateUser() {
+
+            var username = document.getElementById('editUsername').value;
+            var profile = document.getElementById('editProfile').value;
+
+            console.log("Nome de Usuário (atualizado): " + username);
+            console.log("Perfil (atualizado): " + profile);
+    
+            document.getElementById('editForm').reset();
+    
+            window.location.href = '/manage_users';
+        }
+
+        function removeUser(username) {
+            var confirmRemove = confirm("Tem certeza de que deseja remover o usuário " + username + "?");
+        
+            if (confirmRemove) {
+                fetch(`/remove_user/${username}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                        fetch('/get_users')
+                            .then(response => response.json())
+                            .then(users => {
+                                updateUsersTable(users);
+                            })
+                            .catch(error => {
+                                console.error('Erro ao obter a lista de usuários:', error);
+                            });
+                    } else {
+                        alert('Erro ao remover usuário: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro na solicitação:', error);
+                });
+            }
+        }
+        
+    </script>
+
+</body>
+</html>

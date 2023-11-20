@@ -1,0 +1,6 @@
+- acrescentar filtro de data no relatorio
+- tela de gerenciamento de usuario: cadastrar, editar, remover
+- acrescentar nomes nos registros de entrada
+- salvar relatorio em pdf
+- não salvar entrada sem descrição
+- tela com gerenciamento da obra
