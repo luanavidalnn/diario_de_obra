@@ -67,6 +67,21 @@
             window.location.href = `/add_works`;
         }
 
+        function updateWorksTable(works) {
+            var tbody = document.querySelector('table tbody');
+            tbody.innerHTML = '';
+            works.forEach(work => {
+                var row = `<tr>
+                                <td>${work.work_name}</td>
+                                <td>
+                                    <a href="/manage_works/edit_works/${work.work_name}" class="btn btn-primary">Editar</a>
+                                    <a href="#" onclick="removeWork('${work.work_name}')" class="btn btn-danger">Excluir</a>
+                                </td>
+                            </tr>`;
+                tbody.innerHTML += row;
+            });
+        }
+
         function removeWork(work_name) {
             var confirmRemove = confirm("Tem certeza de que deseja remover esta obra?");
     
@@ -103,27 +118,14 @@
             window.location.href = `/edit_works/${work_name}`;
         }
 
-        function updateWorks() {
+        function updateWorks(works) {
             var work_name = document.getElementById('editWorks').value;
             console.log("Nome da Obra (atualizado): " + work_name);
             document.getElementById('editForm').reset();    
             window.location.href = '/manage_works';
         }
 
-        function updateWorksTable(works) {
-            var tbody = document.querySelector('table tbody');
-            tbody.innerHTML = '';
-            works.forEach(work => {
-                var row = `<tr>
-                                <td>${works.work_name}</td>
-                                <td>
-                                    <a href="/manage_works/edit_works/${works.work_name}" class="btn btn-primary">Editar</a>
-                                    <a href="#" onclick="removeWork('${works.work_name}')" class="btn btn-danger">Excluir</a>
-                                </td>
-                            </tr>`;
-                tbody.innerHTML += row;
-            });
-        }
+
     </script>
 </div>
 </body>

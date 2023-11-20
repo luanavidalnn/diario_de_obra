@@ -109,8 +109,8 @@ def manage_users():
 def get_users():
     users_list = list(users.find({}, {'_id': 0}))
     for user in users_list:
-        user['password'] = user['password'].decode('utf-8')
-
+        if 'password' in user:
+            user['password'] = user['password'].decode('utf-8')
     return jsonify(users_list)
 
 @app.route('/users/add', methods=['POST'])
@@ -120,7 +120,6 @@ def add_user():
         profile = request.form.get('profile')
         password = request.form.get('password').encode('utf-8')
         hashed_password = bcrypt.hashpw(password, bcrypt.gensalt())
-
         if users.find_one({'username': username}):
             return jsonify({'success': False, 'message': 'Nome de usuário já existe.'})
         else:
